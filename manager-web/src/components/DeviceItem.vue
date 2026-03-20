@@ -1,16 +1,24 @@
 <template>
   <div class="device-item">
     <div class="device-item__top">
-      <div>
-        <div class="device-item__title">{{ device.agentName }}</div>
-        <div class="device-item__meta">Agent ID: {{ device.agentId }}</div>
+      <div class="device-item__identity">
+        <div class="device-item__avatar">{{ ((device.agentName || 'DeskBot').slice(0, 2)).toUpperCase() }}</div>
+        <div class="device-item__copy">
+          <div class="device-item__eyebrow">DeskBot Agent</div>
+          <div class="device-item__title">{{ device.agentName || 'DeskBot Agent' }}</div>
+          <div class="device-item__meta-row">
+            <span class="device-item__meta-chip">Agent ID: {{ device.agentId }}</span>
+            <span class="device-item__meta-chip">Thiết bị: {{ device.deviceCount }}</span>
+          </div>
+        </div>
       </div>
+
       <div class="device-item__tools">
-        <button class="icon-btn" @click.stop="handleDelete">
+        <button type="button" class="icon-btn icon-btn--danger" @click.stop="handleDelete">
           <img src="@/assets/home/delete.png" alt="" />
         </button>
         <el-tooltip class="item" effect="dark" :content="device.systemPrompt" placement="top" popper-class="custom-tooltip">
-          <button class="icon-btn">
+          <button type="button" class="icon-btn">
             <img src="@/assets/home/info.png" alt="" />
           </button>
         </el-tooltip>
@@ -20,16 +28,34 @@
     <div class="device-summary-grid">
       <div class="device-summary-card">
         <div class="device-summary-card__label">{{ $t('home.languageModel') }}</div>
-        <div class="device-summary-card__value">{{ device.llmModelName }}</div>
+        <div class="device-summary-card__value">{{ device.llmModelName || 'Chưa cấu hình' }}</div>
+        <div class="device-summary-card__foot">Điều phối suy luận chính</div>
       </div>
       <div class="device-summary-card">
         <div class="device-summary-card__label">{{ $t('home.voiceModel') }}</div>
-        <div class="device-summary-card__value">{{ device.ttsModelName }} ({{ device.ttsVoiceName }})</div>
+        <div class="device-summary-card__value">{{ device.ttsModelName || 'Chưa cấu hình' }}</div>
+        <div class="device-summary-card__foot">{{ device.ttsVoiceName || 'Chưa chọn voice' }}</div>
       </div>
     </div>
 
+    <div class="device-insights">
+      <div class="device-insight">
+        <span class="device-insight__label">Memory</span>
+        <span class="device-insight__value">{{ device.memModelId === 'Memory_nomem' ? 'Tắt' : 'Bật' }}</span>
+      </div>
+      <div class="device-insight">
+        <span class="device-insight__label">{{ $t('home.lastConversation') }}</span>
+        <span class="device-insight__value">{{ formattedLastConnectedTime }}</span>
+      </div>
+    </div>
+
+    <div class="device-prompt-preview">
+      <div class="device-prompt-preview__label">System Prompt</div>
+      <div class="device-prompt-preview__text">{{ device.systemPrompt || 'Chưa có prompt hệ thống' }}</div>
+    </div>
+
     <div class="device-actions">
-      <div class="settings-btn" @click="handleConfigure">
+      <div class="settings-btn settings-btn--primary" @click="handleConfigure">
         {{ $t('home.configureRole') }}
       </div>
       <div v-if="featureStatus.voiceprintRecognition" class="settings-btn" @click="handleVoicePrint">
@@ -45,32 +71,22 @@
         <span v-else>{{ $t('home.chatHistory') }}</span>
       </div>
     </div>
-
-    <div class="version-info">
-      <div>{{ $t('home.lastConversation') }}</div>
-      <div class="version-info__value">{{ formattedLastConnectedTime }}</div>
-    </div>
   </div>
 </template>
 
 <script>
-import i18n from '@/i18n';
-
 export default {
   name: 'DeviceItem',
   props: {
     device: { type: Object, required: true },
-    featureStatus: { 
-      type: Object, 
+    featureStatus: {
+      type: Object,
       default: () => ({
         voiceprintRecognition: false,
         voiceClone: false,
         knowledgeBase: false
       })
     }
-  },
-  data() {
-    return { switchValue: false }
   },
   computed: {
     formattedLastConnectedTime() {
@@ -115,58 +131,114 @@ export default {
   }
 }
 </script>
+
 <style scoped>
 .device-item {
   width: 100%;
-  border-radius: 24px;
-  background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
   padding: 22px;
-  box-sizing: border-box;
-  border: 1px solid #e7edf8;
-  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 249, 255, 0.98) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
 }
 
 .device-item__top {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
 }
 
-.device-item__title {
-  font-weight: 800;
-  font-size: 20px;
-  text-align: left;
-  color: #162033;
+.device-item__identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
 }
 
-.device-item__meta {
+.device-item__avatar {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--deskbot-accent) 0%, #2a88f1 100%);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  box-shadow: 0 14px 24px rgba(28, 109, 242, 0.24);
+}
+
+.device-item__copy {
+  min-width: 0;
+}
+
+.device-item__eyebrow {
+  color: var(--deskbot-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.device-item__title {
   margin-top: 6px;
+  color: var(--deskbot-text-strong);
+  font-family: var(--deskbot-font-display);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.12;
+  word-break: break-word;
+}
+
+.device-item__meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.device-item__meta-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--deskbot-surface-muted);
+  color: var(--deskbot-text);
   font-size: 12px;
-  color: #7b88a8;
-  text-align: left;
+  font-weight: 700;
 }
 
 .device-item__tools {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
 }
 
 .icon-btn {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
-  border: 1px solid #e7edf8;
-  background: #f8fbff;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(255, 255, 255, 0.78);
   cursor: pointer;
 }
 
 .icon-btn img {
   width: 16px;
   height: 16px;
+}
+
+.icon-btn--danger:hover {
+  background: rgba(214, 69, 69, 0.08);
 }
 
 .device-summary-grid {
@@ -177,72 +249,160 @@ export default {
 }
 
 .device-summary-card {
-  border-radius: 18px;
-  padding: 14px;
-  background: #eff4ff;
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--deskbot-surface-muted);
   text-align: left;
 }
 
-.device-summary-card__label {
+.device-summary-card__label,
+.device-insight__label,
+.device-prompt-preview__label {
+  color: var(--deskbot-text-muted);
   font-size: 11px;
   font-weight: 700;
-  color: #6b7aa5;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .device-summary-card__value {
-  margin-top: 8px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #22304a;
+  margin-top: 10px;
+  color: var(--deskbot-text-strong);
+  font-size: 14px;
+  line-height: 1.55;
+  font-weight: 700;
   word-break: break-word;
 }
 
-.device-actions {
+.device-summary-card__foot {
+  margin-top: 10px;
+  color: var(--deskbot-text);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.device-insights {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.device-insight {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.device-insight__value {
+  color: var(--deskbot-text-strong);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.device-prompt-preview {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(28, 109, 242, 0.06) 0%, rgba(255, 255, 255, 0.74) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.device-prompt-preview__text {
+  margin-top: 10px;
+  color: var(--deskbot-text);
+  font-size: 13px;
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.device-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
   margin-top: 18px;
 }
 
 .settings-btn {
-  font-weight: 700;
-  font-size: 12px;
-  color: #365acb;
-  background: #e8efff;
-  width: auto;
-  padding: 0 14px;
-  min-height: 32px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  border-radius: 999px;
-}
-
-.version-info {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid #eef2f8;
-  font-size: 12px;
-  color: #7b88a8;
-  font-weight: 500;
-}
-
-.version-info__value {
-  color: #22304a;
+  padding: 0 14px;
+  border-radius: 16px;
+  background: rgba(28, 109, 242, 0.08);
+  color: var(--deskbot-accent-strong);
+  font-size: 13px;
   font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+}
+
+.settings-btn--primary {
+  background: linear-gradient(135deg, var(--deskbot-accent) 0%, #2a88f1 100%);
+  color: #ffffff;
+  box-shadow: 0 14px 24px rgba(28, 109, 242, 0.22);
 }
 
 .disabled-btn {
-  background: #edf0f5;
-  color: #99a3b8;
+  background: #edf1f6;
+  color: #97a6bd;
   cursor: not-allowed;
+}
+
+html.dark-mode .device-item {
+  background: linear-gradient(180deg, rgba(12, 23, 40, 0.96) 0%, rgba(15, 27, 49, 0.94) 100%);
+  border-color: rgba(130, 152, 187, 0.16);
+}
+
+html.dark-mode .device-item__meta-chip,
+html.dark-mode .device-summary-card,
+html.dark-mode .icon-btn,
+html.dark-mode .device-insight,
+html.dark-mode .device-prompt-preview {
+  background: rgba(19, 35, 61, 0.76);
+  border-color: rgba(130, 152, 187, 0.14);
+}
+
+html.dark-mode .settings-btn {
+  background: rgba(62, 131, 255, 0.16);
+  color: #dceaff;
+}
+
+html.dark-mode .settings-btn--primary {
+  background: linear-gradient(135deg, var(--deskbot-accent) 0%, #2a88f1 100%);
+  color: #ffffff;
+}
+
+html.dark-mode .disabled-btn {
+  background: rgba(130, 152, 187, 0.12);
+  color: #8fa3c6;
+}
+
+@media (max-width: 560px) {
+  .device-summary-grid,
+  .device-insights,
+  .device-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .device-item__top {
+    flex-direction: column;
+  }
+
+  .device-item__tools {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }
 </style>
 
@@ -250,43 +410,5 @@ export default {
 .custom-tooltip {
   max-width: 400px;
   word-break: break-word;
-}
-
-html.dark-mode .device-item {
-  background: linear-gradient(180deg, #101a32 0%, #16213e 100%);
-  border-color: #22304a;
-  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.24);
-}
-
-html.dark-mode .device-item__title,
-html.dark-mode .version-info__value,
-html.dark-mode .device-summary-card__value {
-  color: #e5ecf6;
-}
-
-html.dark-mode .device-item__meta,
-html.dark-mode .version-info,
-html.dark-mode .device-summary-card__label {
-  color: #9fb0d3;
-}
-
-html.dark-mode .device-summary-card,
-html.dark-mode .icon-btn {
-  background: rgba(87, 120, 255, 0.12);
-  border-color: rgba(148, 163, 184, 0.18);
-}
-
-html.dark-mode .settings-btn {
-  background: rgba(87, 120, 255, 0.18);
-  color: #dce6ff;
-}
-
-html.dark-mode .disabled-btn {
-  background: rgba(148, 163, 184, 0.14);
-  color: #8fa0c2;
-}
-
-html.dark-mode .version-info {
-  border-top-color: #22304a;
 }
 </style>

@@ -4,43 +4,74 @@
     <el-main class="home-main">
       <div class="home-shell">
         <section class="dashboard-hero">
-          <div class="dashboard-hero__content">
-            <div class="dashboard-pill">DeskBot Console</div>
-            <h1 class="dashboard-title">TRUNG TÂM ĐIỀU PHỐI DESKBOT</h1>
+          <div class="dashboard-hero__main">
+            <div class="dashboard-hero__topline">
+              <div class="dashboard-pill">
+                <img loading="lazy" alt="" src="@/assets/deskbot-mark.svg" class="dashboard-pill__icon" />
+                <span>DeskBot Console</span>
+              </div>
+              <div class="dashboard-state-pill">
+                <span class="dashboard-state-pill__dot"></span>
+                {{ isLoading ? 'Đang đồng bộ dữ liệu' : 'Sẵn sàng điều phối' }}
+              </div>
+            </div>
+            <h1 class="dashboard-title">Bảng điều phối vận hành DeskBot</h1>
             <p class="dashboard-subtitle">
-              Quản lý agent, thiết bị và hoạt động vận hành trong một giao diện gọn, rõ và khác biệt hơn bản gốc.
+              Giữ nguyên toàn bộ hành vi hiện có, nhưng nâng shell quản trị lên một bề mặt desktop rõ ràng hơn cho
+              giám sát agent, thiết bị và trạng thái hệ thống.
             </p>
             <div class="dashboard-actions">
-              <button class="primary-action" @click="showAddDialog">{{ $t('home.addAgent') }}</button>
-              <button class="secondary-action" @click="fetchAgentList">Làm mới danh sách</button>
+              <button type="button" class="primary-action" @click="showAddDialog">{{ $t('home.addAgent') }}</button>
+              <button type="button" class="secondary-action" @click="fetchAgentList">Làm mới danh sách</button>
             </div>
           </div>
-          <div class="dashboard-hero__stats">
-            <div class="hero-stat-card">
-              <div class="hero-stat-card__label">Tổng agent</div>
-              <div class="hero-stat-card__value">{{ devices.length }}</div>
-              <div class="hero-stat-card__hint">Đang hiển thị trên dashboard</div>
+
+          <div class="dashboard-hero__aside">
+            <div class="hero-spotlight">
+              <div class="hero-spotlight__label">Fleet Snapshot</div>
+              <div class="hero-spotlight__value">{{ devices.length }}</div>
+              <div class="hero-spotlight__copy">agent đang hiển thị trên dashboard</div>
             </div>
-            <div class="hero-stat-card">
-              <div class="hero-stat-card__label">Đang tải</div>
-              <div class="hero-stat-card__value">{{ isLoading ? 'Có' : 'Không' }}</div>
-              <div class="hero-stat-card__hint">Trạng thái đồng bộ dữ liệu</div>
-            </div>
-            <div class="hero-stat-card">
-              <div class="hero-stat-card__label">Tìm kiếm</div>
-              <div class="hero-stat-card__value">{{ isSearching ? 'Đang lọc' : 'Toàn bộ' }}</div>
-              <div class="hero-stat-card__hint">Nguồn dữ liệu đang xem</div>
+            <div class="hero-mini-grid">
+              <div class="hero-mini-card">
+                <div class="hero-mini-card__label">Nguồn dữ liệu</div>
+                <div class="hero-mini-card__value">{{ isSearching ? 'Kết quả lọc' : 'Danh sách đầy đủ' }}</div>
+              </div>
+              <div class="hero-mini-card">
+                <div class="hero-mini-card__label">Danh sách gốc</div>
+                <div class="hero-mini-card__value">{{ originalDevices.length }}</div>
+              </div>
+              <div class="hero-mini-card">
+                <div class="hero-mini-card__label">Module bật</div>
+                <div class="hero-mini-card__value">
+                  {{ Number(featureStatus.voiceprintRecognition) + Number(featureStatus.voiceClone) + Number(featureStatus.knowledgeBase) }}
+                </div>
+              </div>
+              <div class="hero-mini-card">
+                <div class="hero-mini-card__label">Knowledge Base</div>
+                <div class="hero-mini-card__value">{{ featureStatus.knowledgeBase ? 'Bật' : 'Tắt' }}</div>
+              </div>
             </div>
           </div>
         </section>
 
         <section class="fleet-panel">
           <div class="fleet-panel__header">
-            <div>
+            <div class="fleet-panel__copy">
               <div class="fleet-panel__eyebrow">Agent Fleet</div>
-              <div class="fleet-panel__title">Danh sách agent và thiết bị</div>
+              <div class="fleet-panel__title-row">
+                <div class="fleet-panel__title">Danh sách agent và thiết bị</div>
+                <div class="fleet-panel__summary">{{ devices.length }} mục</div>
+              </div>
+              <p class="fleet-panel__description">
+                Tất cả thao tác cấu hình, quản lý thiết bị, xóa agent và lịch sử chat vẫn giữ nguyên như hiện tại.
+              </p>
             </div>
-            <div class="fleet-panel__summary">{{ devices.length }} mục</div>
+            <div class="fleet-panel__badges">
+              <div class="fleet-badge">Voice Clone: {{ featureStatus.voiceClone ? 'Bật' : 'Tắt' }}</div>
+              <div class="fleet-badge">Voiceprint: {{ featureStatus.voiceprintRecognition ? 'Bật' : 'Tắt' }}</div>
+              <div class="fleet-badge">Search: {{ isSearching ? 'Đang lọc' : 'Toàn bộ' }}</div>
+            </div>
           </div>
 
           <div class="device-list-container">
@@ -54,11 +85,27 @@
               </div>
             </template>
 
-            <template v-else>
-              <DeviceItem v-for="(item, index) in devices" :key="index" :device="item" :feature-status="featureStatus"
-                @configure="goToRoleConfig" @deviceManage="handleDeviceManage" @delete="handleDeleteAgent"
-                @chat-history="handleShowChatHistory" />
+            <template v-else-if="devices.length">
+              <DeviceItem
+                v-for="(item, index) in devices"
+                :key="index"
+                :device="item"
+                :feature-status="featureStatus"
+                @configure="goToRoleConfig"
+                @deviceManage="handleDeviceManage"
+                @delete="handleDeleteAgent"
+                @chat-history="handleShowChatHistory"
+              />
             </template>
+
+            <div v-else class="empty-state">
+              <div class="empty-state__eyebrow">DeskBot Console</div>
+              <div class="empty-state__title">Chưa có agent nào để hiển thị</div>
+              <p class="empty-state__copy">
+                Dữ liệu hiện tại đang trống hoặc bộ lọc chưa khớp. Bạn vẫn có thể giữ nguyên flow hiện tại và tải lại danh sách.
+              </p>
+              <button type="button" class="empty-state__action" @click="fetchAgentList">Tải lại dữ liệu</button>
+            </div>
           </div>
         </section>
       </div>
@@ -95,7 +142,6 @@ export default {
       showChatHistory: false,
       currentAgentId: '',
       currentAgentName: '',
-      // 功能状态
       featureStatus: {
         voiceprintRecognition: false,
         voiceClone: false,
@@ -110,7 +156,6 @@ export default {
   },
 
   methods: {
-    // 加载功能状态
     async loadFeatureStatus() {
       await featureManager.waitForInitialization();
       const config = featureManager.getConfig();
@@ -120,12 +165,11 @@ export default {
         knowledgeBase: config.knowledgeBase
       };
     },
-    
+
     showAddDialog() {
       this.addDeviceDialogVisible = true
     },
     goToRoleConfig() {
-      // 点击配置角色后跳转到角色配置页
       this.$router.push('/role-config')
     },
     handleWisdomBodyAdded(res) {
@@ -138,7 +182,6 @@ export default {
     handleSearch(keyword) {
       this.isSearching = true;
       this.isLoading = true;
-      // 检测MAC地址格式：包含4个冒号
       const isMac = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/.test(keyword)
       const searchType = isMac ? 'mac' : 'name';
       Api.agent.searchAgent(keyword, searchType, ({ data }) => {
@@ -157,15 +200,12 @@ export default {
     },
     handleSearchReset() {
       this.isSearching = false;
-      // 直接将原始设备列表赋值给显示设备列表，避免重新加载数据
       this.devices = [...this.originalDevices];
     },
 
-    // 搜索更新智能体列表
     handleSearchResult(filteredList) {
-      this.devices = filteredList; // 更新设备列表
+      this.devices = filteredList;
     },
-    // 获取智能体列表
     fetchAgentList() {
       this.isLoading = true;
       Api.agent.getAgentList(({ data }) => {
@@ -175,10 +215,9 @@ export default {
             agentId: item.id
           }));
 
-          // 动态设置骨架屏数量（可选）
           this.skeletonCount = Math.min(
-            Math.max(this.originalDevices.length, 3), // 最少3个
-            10 // 最多10个
+            Math.max(this.originalDevices.length, 3),
+            10
           );
 
           this.handleSearchReset();
@@ -189,7 +228,6 @@ export default {
         this.isLoading = false;
       });
     },
-    // 删除智能体
     handleDeleteAgent(agentId) {
       this.$confirm(this.$t('home.confirmDeleteAgent'), '提示', {
         confirmButtonText: this.$t('button.ok'),
@@ -202,7 +240,7 @@ export default {
               message: this.$t('home.deleteSuccess'),
               showClose: true
             });
-            this.fetchAgentList(); // 刷新列表
+            this.fetchAgentList();
           } else {
             this.$message.error({
               message: res.data.msg || this.$t('home.deleteFailed'),
@@ -223,16 +261,14 @@ export default {
 
 <style scoped>
 .welcome {
-  min-width: 900px;
-  min-height: 506px;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #eef4ff 0%, #f7f9fc 100%);
+  background: transparent;
 }
 
 .home-main {
-  padding: 24px;
+  padding: 24px 24px 30px;
   display: flex;
   flex-direction: column;
 }
@@ -245,165 +281,278 @@ export default {
 
 .dashboard-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
-  gap: 22px;
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.9fr);
+  gap: 20px;
   padding: 30px;
-  border-radius: 28px;
+  border-radius: 30px;
   background:
-    radial-gradient(circle at top left, rgba(110, 142, 251, 0.32), transparent 35%),
-    linear-gradient(135deg, #11203f 0%, #1d3160 45%, #2d4d90 100%);
-  box-shadow: 0 24px 60px rgba(26, 43, 85, 0.18);
+    radial-gradient(circle at top left, rgba(133, 187, 255, 0.28), transparent 32%),
+    linear-gradient(135deg, #0b1938 0%, #10306a 48%, #0a5f9a 100%);
+  box-shadow: var(--deskbot-shadow-lg);
 }
 
-.dashboard-hero__content {
-  text-align: left;
+.dashboard-hero__main,
+.dashboard-hero__aside {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-hero__topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dashboard-pill,
+.dashboard-state-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .dashboard-pill {
-  display: inline-flex;
-  align-items: center;
-  height: 34px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #dfe8ff;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #edf4ff;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dashboard-pill__icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.dashboard-state-pill {
+  gap: 10px;
+  background: rgba(8, 25, 56, 0.34);
+  color: rgba(236, 243, 255, 0.88);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dashboard-state-pill__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #30d19c;
+  box-shadow: 0 0 0 6px rgba(48, 209, 156, 0.16);
 }
 
 .dashboard-title {
-  margin: 18px 0 14px;
+  margin: 22px 0 14px;
+  font-family: var(--deskbot-font-display);
+  font-size: clamp(34px, 4vw, 54px);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
   color: #ffffff;
-  font-size: 38px;
-  line-height: 1.12;
-  font-weight: 800;
-  max-width: 720px;
 }
 
 .dashboard-subtitle {
-  margin: 0;
   max-width: 680px;
-  color: rgba(234, 240, 255, 0.86);
+  margin: 0;
+  color: rgba(229, 238, 255, 0.82);
   font-size: 15px;
-  line-height: 1.7;
+  line-height: 1.72;
 }
 
 .dashboard-actions {
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-wrap: wrap;
   margin-top: 28px;
 }
 
 .primary-action,
-.secondary-action {
-  border: none;
+.secondary-action,
+.empty-state__action {
+  min-height: 46px;
+  padding: 0 20px;
   border-radius: 16px;
-  padding: 0 18px;
-  height: 44px;
+  border: none;
   cursor: pointer;
   font-size: 14px;
   font-weight: 700;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
 
-.primary-action {
+.primary-action,
+.empty-state__action {
   background: #ffffff;
-  color: #1f3d7a;
+  color: #14356d;
+  box-shadow: 0 12px 24px rgba(8, 25, 56, 0.16);
 }
 
 .secondary-action {
   background: rgba(255, 255, 255, 0.12);
-  color: #eaf0ff;
+  color: #edf4ff;
   border: 1px solid rgba(255, 255, 255, 0.16);
 }
 
-.dashboard-hero__stats {
-  display: grid;
+.primary-action:hover,
+.secondary-action:hover,
+.empty-state__action:hover {
+  transform: translateY(-1px);
+}
+
+.dashboard-hero__aside {
+  display: flex;
+  flex-direction: column;
   gap: 14px;
 }
 
-.hero-stat-card {
-  border-radius: 22px;
-  padding: 18px 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(12px);
-  text-align: left;
+.hero-spotlight {
+  padding: 24px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(16px);
 }
 
-.hero-stat-card__label {
-  color: #bfcdf6;
-  font-size: 12px;
-  font-weight: 600;
+.hero-spotlight__label,
+.hero-mini-card__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  color: rgba(220, 231, 252, 0.7);
 }
 
-.hero-stat-card__value {
-  margin-top: 8px;
-  color: #ffffff;
-  font-size: 28px;
+.hero-spotlight__value {
+  margin-top: 14px;
+  font-size: 44px;
+  line-height: 1;
   font-weight: 800;
+  color: #ffffff;
 }
 
-.hero-stat-card__hint {
-  margin-top: 6px;
-  color: rgba(234, 240, 255, 0.78);
-  font-size: 12px;
+.hero-spotlight__copy {
+  margin-top: 10px;
+  color: rgba(229, 238, 255, 0.78);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.hero-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.hero-mini-card {
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.hero-mini-card__value {
+  margin-top: 10px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
   line-height: 1.5;
 }
 
 .fleet-panel {
-  border-radius: 28px;
   padding: 26px;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(210, 220, 242, 0.9);
-  box-shadow: 0 16px 42px rgba(31, 41, 55, 0.08);
+  border-radius: 30px;
+  background: var(--deskbot-surface);
+  border: 1px solid var(--deskbot-border);
+  box-shadow: var(--deskbot-shadow-md);
+  backdrop-filter: blur(16px);
 }
 
 .fleet-panel__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 18px;
+  flex-wrap: wrap;
 }
 
-.fleet-panel__eyebrow {
-  color: #5778ff;
+.fleet-panel__copy {
+  min-width: 0;
+}
+
+.fleet-panel__eyebrow,
+.empty-state__eyebrow {
+  color: var(--deskbot-accent);
   font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+}
+
+.fleet-panel__title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 8px;
 }
 
 .fleet-panel__title {
-  margin-top: 6px;
-  color: #162033;
-  font-size: 24px;
-  font-weight: 800;
+  color: var(--deskbot-text-strong);
+  font-family: var(--deskbot-font-display);
+  font-size: 28px;
+  font-weight: 700;
 }
 
 .fleet-panel__summary {
-  min-width: 96px;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 999px;
-  background: #eef3ff;
-  color: #365acb;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--deskbot-accent-soft);
+  color: var(--deskbot-accent-strong);
   font-size: 13px;
+  font-weight: 700;
+}
+
+.fleet-panel__description {
+  max-width: 760px;
+  margin: 12px 0 0;
+  color: var(--deskbot-text-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.fleet-panel__badges {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fleet-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--deskbot-surface-muted);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  color: var(--deskbot-text);
+  font-size: 12px;
   font-weight: 700;
 }
 
 .device-list-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 22px;
-  padding: 24px 0 0;
+  padding-top: 24px;
 }
 
 .device-item {
@@ -418,100 +567,154 @@ export default {
 }
 
 .skeleton-item {
-  background: #fff;
-  border-radius: 22px;
-  padding: 24px;
-  height: 140px;
   position: relative;
   overflow: hidden;
-  border: 1px solid #e8edf6;
+  min-height: 180px;
+  padding: 24px;
+  border-radius: 24px;
+  background: var(--deskbot-surface-strong);
+  border: 1px solid rgba(148, 163, 184, 0.14);
 }
 
 .skeleton-image {
   width: 72px;
   height: 72px;
-  background: #eef2f8;
-  border-radius: 18px;
+  border-radius: 22px;
+  background: var(--deskbot-surface-muted);
   float: left;
-  position: relative;
-  overflow: hidden;
 }
 
 .skeleton-content {
-  margin-left: 96px;
+  margin-left: 94px;
+}
+
+.skeleton-line,
+.skeleton-line-short {
+  border-radius: 999px;
+  background: var(--deskbot-surface-muted);
 }
 
 .skeleton-line {
+  width: 72%;
   height: 16px;
-  background: #eef2f8;
-  border-radius: 999px;
-  margin-bottom: 12px;
-  width: 70%;
-  position: relative;
-  overflow: hidden;
+  margin-bottom: 14px;
 }
 
 .skeleton-line-short {
+  width: 48%;
   height: 12px;
-  background: #eef2f8;
-  border-radius: 999px;
-  width: 50%;
 }
 
 .skeleton-item::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(90deg,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0.42),
-      rgba(255, 255, 255, 0));
+  inset: 0 auto 0 0;
+  width: 42%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0));
   animation: shimmer 1.5s infinite;
 }
-</style>
 
-/* Dark mode overrides (non-scoped) */
-html.dark-mode .welcome {
-  background: linear-gradient(180deg, #0f172a 0%, #111827 100%) !important;
+.empty-state {
+  grid-column: 1 / -1;
+  padding: 42px 28px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(28, 109, 242, 0.06) 0%, rgba(255, 255, 255, 0.78) 100%);
+  border: 1px dashed rgba(28, 109, 242, 0.24);
+  text-align: center;
+}
+
+.empty-state__title {
+  margin-top: 12px;
+  color: var(--deskbot-text-strong);
+  font-family: var(--deskbot-font-display);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.empty-state__copy {
+  max-width: 620px;
+  margin: 12px auto 0;
+  color: var(--deskbot-text-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.empty-state__action {
+  margin-top: 20px;
 }
 
 html.dark-mode .dashboard-hero {
   background:
-    radial-gradient(circle at top left, rgba(87, 120, 255, 0.24), transparent 35%),
-    linear-gradient(135deg, #0f172a 0%, #15213e 45%, #22335f 100%) !important;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+    radial-gradient(circle at top left, rgba(62, 131, 255, 0.26), transparent 32%),
+    linear-gradient(135deg, #081120 0%, #0d2347 48%, #0f4c75 100%);
 }
 
 html.dark-mode .fleet-panel {
-  background: rgba(15, 23, 42, 0.88);
-  border-color: rgba(51, 65, 85, 0.9);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.26);
+  background: var(--deskbot-surface);
+  border-color: rgba(130, 152, 187, 0.16);
 }
 
-html.dark-mode .fleet-panel__title {
-  color: #e5ecf6;
-}
-
-html.dark-mode .fleet-panel__summary {
-  background: rgba(87, 120, 255, 0.16);
-  color: #dce6ff;
-}
-
-html.dark-mode .hero-stat-card {
-  background: rgba(15, 23, 42, 0.34);
-  border-color: rgba(148, 163, 184, 0.18);
-}
-
-html.dark-mode .skeleton-item {
-  background: #16213e;
-  border-color: #24304d;
+html.dark-mode .fleet-badge,
+html.dark-mode .skeleton-item,
+html.dark-mode .empty-state {
+  background: rgba(19, 35, 61, 0.72);
 }
 
 html.dark-mode .skeleton-image,
 html.dark-mode .skeleton-line,
 html.dark-mode .skeleton-line-short {
-  background: #1a1a2e;
+  background: rgba(130, 152, 187, 0.12);
 }
+
+html.dark-mode .empty-state {
+  border-color: rgba(62, 131, 255, 0.24);
+}
+
+@media (max-width: 1180px) {
+  .dashboard-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .home-main {
+    padding: 18px 18px 24px;
+  }
+
+  .dashboard-hero,
+  .fleet-panel {
+    padding: 22px;
+    border-radius: 24px;
+  }
+
+  .dashboard-actions,
+  .fleet-panel__badges {
+    width: 100%;
+  }
+
+  .hero-mini-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .dashboard-title {
+    font-size: 32px;
+  }
+
+  .dashboard-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .primary-action,
+  .secondary-action,
+  .empty-state__action {
+    width: 100%;
+  }
+
+  .device-list-container {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

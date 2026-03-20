@@ -1,58 +1,60 @@
 <template>
   <el-header class="header">
     <div class="header-container">
-      <!-- 左侧元素 -->
       <div class="header-left" @click="goHome">
-        <img loading="lazy" alt="" src="@/assets/xiaozhi-logo.png" class="logo-img" />
-        <img loading="lazy" alt="" :src="xiaozhiAiIcon" class="brand-img" />
+        <img loading="lazy" alt="" src="@/assets/deskbot-mark.svg" class="logo-img" />
+        <div class="brand-copy">
+          <div class="brand-copy__eyebrow">DeskBot Console</div>
+          <div class="brand-copy__title">{{ isSuperAdmin ? 'Admin Control Layer' : 'Operator Workspace' }}</div>
+        </div>
       </div>
 
-      <!-- 中间导航菜单 -->
       <div class="header-center">
-        <div class="equipment-management" :class="{
-          'active-tab':
-            $route.path === '/home' ||
-            $route.path === '/role-config' ||
-            $route.path === '/device-management',
-        }" @click="goHome">
-          <img loading="lazy" alt="" src="@/assets/header/robot.png" :style="{
-            filter:
+        <div
+          class="nav-pill"
+          :class="{
+            'active-tab':
               $route.path === '/home' ||
-                $route.path === '/role-config' ||
-                $route.path === '/device-management'
-                ? 'brightness(0) invert(1)'
-                : 'None',
-          }" />
+              $route.path === '/role-config' ||
+              $route.path === '/device-management',
+          }"
+          @click="goHome"
+        >
+          <span class="nav-pill__icon">
+            <img loading="lazy" alt="" src="@/assets/header/robot.png" />
+          </span>
           <span class="nav-text">{{ $t("header.smartManagement") }}</span>
         </div>
-        <!-- 普通用户显示音色克隆 -->
-        <div v-if="!isSuperAdmin && featureStatus.voiceClone" class="equipment-management"
-          :class="{ 'active-tab': $route.path === '/voice-clone-management' }" @click="goVoiceCloneManagement">
-          <img loading="lazy" alt="" src="@/assets/header/voice.png" :style="{
-            filter:
-              $route.path === '/voice-clone-management'
-                ? 'brightness(0) invert(1)'
-                : 'None',
-          }" />
+
+        <div
+          v-if="!isSuperAdmin && featureStatus.voiceClone"
+          class="nav-pill"
+          :class="{ 'active-tab': $route.path === '/voice-clone-management' }"
+          @click="goVoiceCloneManagement"
+        >
+          <span class="nav-pill__icon">
+            <img loading="lazy" alt="" src="@/assets/header/voice.png" />
+          </span>
           <span class="nav-text">{{ $t("header.voiceCloneManagement") }}</span>
         </div>
 
-        <!-- 超级管理员显示音色克隆下拉菜单 -->
-        <el-dropdown v-if="isSuperAdmin && featureStatus.voiceClone" trigger="click" class="equipment-management more-dropdown" :class="{
-          'active-tab':
-            $route.path === '/voice-clone-management' ||
-            $route.path === '/voice-resource-management',
-        }" @visible-change="handleVoiceCloneDropdownVisibleChange">
-          <span class="el-dropdown-link">
-            <img loading="lazy" alt="" src="@/assets/header/voice.png" :style="{
-              filter:
-                $route.path === '/voice-clone-management' ||
-                  $route.path === '/voice-resource-management'
-                  ? 'brightness(0) invert(1)'
-                  : 'None',
-            }" />
+        <el-dropdown
+          v-if="isSuperAdmin && featureStatus.voiceClone"
+          trigger="click"
+          class="nav-pill nav-pill--dropdown"
+          :class="{
+            'active-tab':
+              $route.path === '/voice-clone-management' ||
+              $route.path === '/voice-resource-management',
+          }"
+          @visible-change="handleVoiceCloneDropdownVisibleChange"
+        >
+          <span class="nav-pill__content">
+            <span class="nav-pill__icon">
+              <img loading="lazy" alt="" src="@/assets/header/voice.png" />
+            </span>
             <span class="nav-text">{{ $t("header.voiceCloneManagement") }}</span>
-            <i class="el-icon-arrow-down el-icon--right" :class="{ 'rotate-down': voiceCloneDropdownVisible }"></i>
+            <i class="el-icon-arrow-down nav-pill__arrow" :class="{ 'rotate-down': voiceCloneDropdownVisible }"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item @click.native="goVoiceCloneManagement">
@@ -64,50 +66,48 @@
           </el-dropdown-menu>
         </el-dropdown>
 
-        <div v-if="isSuperAdmin" class="equipment-management" :class="{ 'active-tab': $route.path === '/model-config' }"
-          @click="goModelConfig">
-          <img loading="lazy" alt="" src="@/assets/header/model_config.png" :style="{
-            filter:
-              $route.path === '/model-config' ? 'brightness(0) invert(1)' : 'None',
-          }" />
+        <div v-if="isSuperAdmin" class="nav-pill" :class="{ 'active-tab': $route.path === '/model-config' }" @click="goModelConfig">
+          <span class="nav-pill__icon">
+            <img loading="lazy" alt="" src="@/assets/header/model_config.png" />
+          </span>
           <span class="nav-text">{{ $t("header.modelConfig") }}</span>
         </div>
-        <div v-if="featureStatus.knowledgeBase" class="equipment-management"
+
+        <div
+          v-if="featureStatus.knowledgeBase"
+          class="nav-pill"
           :class="{ 'active-tab': $route.path === '/knowledge-base-management' || $route.path === '/knowledge-file-upload' }"
-          @click="goKnowledgeBaseManagement">
-          <img loading="lazy" alt="" src="@/assets/header/knowledge_base.png" :style="{
-            filter:
-              $route.path === '/knowledge-base-management' || $route.path === '/knowledge-file-upload' ? 'brightness(0) invert(1)' : 'None',
-          }" />
+          @click="goKnowledgeBaseManagement"
+        >
+          <span class="nav-pill__icon">
+            <img loading="lazy" alt="" src="@/assets/header/knowledge_base.png" />
+          </span>
           <span class="nav-text">{{ $t("header.knowledgeBase") }}</span>
         </div>
-        <el-dropdown v-if="isSuperAdmin" trigger="click" class="equipment-management more-dropdown" :class="{
-          'active-tab':
-            $route.path === '/dict-management' ||
-            $route.path === '/params-management' ||
-            $route.path === '/provider-management' ||
-            $route.path === '/server-side-management' ||
-            $route.path === '/agent-template-management' ||
-            $route.path === '/ota-management' ||
-            $route.path === '/user-management' ||
-            $route.path === '/feature-management',
-        }" @visible-change="handleParamDropdownVisibleChange">
-          <span class="el-dropdown-link">
-            <img loading="lazy" alt="" src="@/assets/header/param_management.png" :style="{
-              filter:
-                $route.path === '/dict-management' ||
-                  $route.path === '/params-management' ||
-                  $route.path === '/provider-management' ||
-                  $route.path === '/server-side-management' ||
-                  $route.path === '/agent-template-management' ||
-                  $route.path === '/ota-management' ||
-                  $route.path === '/user-management' ||
-                  $route.path === '/feature-management'
-                  ? 'brightness(0) invert(1)'
-                  : 'None',
-            }" />
+
+        <el-dropdown
+          v-if="isSuperAdmin"
+          trigger="click"
+          class="nav-pill nav-pill--dropdown"
+          :class="{
+            'active-tab':
+              $route.path === '/dict-management' ||
+              $route.path === '/params-management' ||
+              $route.path === '/provider-management' ||
+              $route.path === '/server-side-management' ||
+              $route.path === '/agent-template-management' ||
+              $route.path === '/ota-management' ||
+              $route.path === '/user-management' ||
+              $route.path === '/feature-management',
+          }"
+          @visible-change="handleParamDropdownVisibleChange"
+        >
+          <span class="nav-pill__content">
+            <span class="nav-pill__icon">
+              <img loading="lazy" alt="" src="@/assets/header/param_management.png" />
+            </span>
             <span class="nav-text">{{ $t("header.paramDictionary") }}</span>
-            <i class="el-icon-arrow-down el-icon--right" :class="{ 'rotate-down': paramDropdownVisible }"></i>
+            <i class="el-icon-arrow-down nav-pill__arrow" :class="{ 'rotate-down': paramDropdownVisible }"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item @click.native="goParamManagement">
@@ -132,22 +132,27 @@
               {{ $t("header.serverSideManagement") }}
             </el-dropdown-item>
             <el-dropdown-item @click.native="goFeatureManagement">
-                {{ $t("header.featureManagement") }}
-              </el-dropdown-item>
+              {{ $t("header.featureManagement") }}
+            </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </div>
 
-      <!-- 右侧元素 -->
       <div class="header-right">
         <div class="search-container" v-if="$route.path === '/home' && !(isSuperAdmin && isSmallScreen)">
           <div class="search-wrapper">
-            <el-input v-model="search" :placeholder="$t('header.searchPlaceholder')" class="custom-search-input"
-              @keyup.enter.native="handleSearch" @focus="showSearchHistory" @blur="hideSearchHistory" clearable
-              ref="searchInput">
+            <el-input
+              v-model="search"
+              :placeholder="$t('header.searchPlaceholder')"
+              class="custom-search-input"
+              @keyup.enter.native="handleSearch"
+              @focus="showSearchHistory"
+              @blur="hideSearchHistory"
+              clearable
+              ref="searchInput"
+            >
               <i slot="suffix" class="el-icon-search search-icon" @click="handleSearch"></i>
             </el-input>
-            <!-- 搜索历史下拉框 -->
             <div v-if="showHistory && searchHistory.length > 0" class="search-history-dropdown">
               <div class="search-history-header">
                 <span>{{ $t("header.searchHistory") }}</span>
@@ -156,8 +161,12 @@
                 </el-button>
               </div>
               <div class="search-history-list">
-                <div v-for="(item, index) in searchHistory" :key="index" class="search-history-item"
-                  @click.stop="selectSearchHistory(item)">
+                <div
+                  v-for="(item, index) in searchHistory"
+                  :key="index"
+                  class="search-history-item"
+                  @click.stop="selectSearchHistory(item)"
+                >
                   <span class="history-text">{{ item }}</span>
                   <i class="el-icon-close clear-item-icon" @click.stop="removeSearchHistory(index)"></i>
                 </div>
@@ -166,19 +175,32 @@
           </div>
         </div>
 
-        <!-- 暗黑模式切换 -->
-        <div class="dark-mode-toggle">
-          <el-switch v-model="isDarkMode" @change="toggleDarkMode" active-color="#2a2a4a" inactive-color="#dcdfe6" :width="28" />
-          <span class="dark-mode-label">{{ isDarkMode ? '🌙' : '☀️' }}</span>
+        <div class="header-meta">
+          <div class="context-chip">{{ currentLanguageText }}</div>
+          <div class="dark-mode-toggle">
+            <el-switch v-model="isDarkMode" @change="toggleDarkMode" active-color="#0f4bb7" inactive-color="#d1d9e6" :width="28" />
+            <span class="dark-mode-label">{{ isDarkMode ? 'Night' : 'Day' }}</span>
+          </div>
+          <div class="profile-trigger" @click="handleAvatarClick">
+            <img loading="lazy" alt="" src="@/assets/home/avatar.png" class="avatar-img" />
+            <div class="profile-trigger__copy">
+              <span class="profile-trigger__name">{{ userInfo.username || "Đang tải..." }}</span>
+              <span class="profile-trigger__role">{{ isSuperAdmin ? 'Super Admin' : 'Operator' }}</span>
+            </div>
+            <i class="el-icon-arrow-down profile-trigger__arrow" :class="{ 'rotate-down': userMenuVisible }"></i>
+          </div>
         </div>
-        <img loading="lazy" alt="" src="@/assets/home/avatar.png" class="avatar-img" @click="handleAvatarClick" />
-        <span class="el-user-dropdown" @click="handleAvatarClick">
-          {{ userInfo.username || "加载中..." }}
-          <i class="el-icon-arrow-down el-icon--right" :class="{ 'rotate-down': userMenuVisible }"></i>
-        </span>
-        <el-cascader :options="userMenuOptions" trigger="click" :props="cascaderProps"
-          style="width: 0px; overflow: hidden" :show-all-levels="false" @change="handleCascaderChange"
-          @visible-change="handleUserMenuVisibleChange" ref="userCascader">
+
+        <el-cascader
+          :options="userMenuOptions"
+          trigger="click"
+          :props="cascaderProps"
+          style="width: 0px; overflow: hidden"
+          :show-all-levels="false"
+          @change="handleCascaderChange"
+          @visible-change="handleUserMenuVisibleChange"
+          ref="userCascader"
+        >
           <template slot-scope="{ data }">
             <span>{{ data.label }}</span>
           </template>
@@ -186,7 +208,6 @@
       </div>
     </div>
 
-    <!-- 修改密码弹窗 -->
     <ChangePasswordDialog v-model="isChangePasswordDialogVisible" />
   </el-header>
 </template>
@@ -195,15 +216,15 @@
 import userApi from "@/apis/module/user";
 
 import { mapActions, mapGetters } from "vuex";
-import ChangePasswordDialog from "./ChangePasswordDialog.vue"; // 引入修改密码弹窗组件
-import featureManager from "@/utils/featureManager"; // 引入功能管理工具类
+import ChangePasswordDialog from "./ChangePasswordDialog.vue";
+import featureManager from "@/utils/featureManager";
 
 export default {
   name: "HeaderBar",
   components: {
     ChangePasswordDialog,
   },
-  props: ["devices"], // 接收父组件设备列表
+  props: ["devices"],
   data() {
     return {
       search: "",
@@ -211,29 +232,26 @@ export default {
         username: "",
         mobile: "",
       },
-      isChangePasswordDialogVisible: false, // 控制修改密码弹窗的显示
+      isChangePasswordDialogVisible: false,
       paramDropdownVisible: false,
       voiceCloneDropdownVisible: false,
-      userMenuVisible: false, // 添加用户菜单可见状态
-      menuVisibleTimer: null, // 菜单显示定时器，防止够快触发
+      userMenuVisible: false,
+      menuVisibleTimer: null,
       isSmallScreen: false,
-      // 搜索历史相关
       searchHistory: [],
       isDarkMode: false,
       showHistory: false,
       SEARCH_HISTORY_KEY: "xiaozhi_search_history",
       MAX_HISTORY_COUNT: 3,
-      // Cascader 配置
       cascaderProps: {
         expandTrigger: "click",
         value: "value",
         label: "label",
         children: "children",
       },
-      // 功能状态
       featureStatus: {
-        voiceClone: false, // 音色克隆功能状态
-        knowledgeBase: false, // 知识库功能状态
+        voiceClone: false,
+        knowledgeBase: false,
       },
     };
   },
@@ -242,19 +260,9 @@ export default {
     isSuperAdmin() {
       return this.getIsSuperAdmin;
     },
-    // 获取当前语言
-    currentLanguage() {
-      return 'vi';
-    },
-    // Ngôn ngữ hiện tại
     currentLanguageText() {
       return "Tiếng Việt";
     },
-    // Logo icon
-    xiaozhiAiIcon() {
-      return require("@/assets/xiaozhi-ai_vi.png");
-    },
-    // 用户菜单选项
     userMenuOptions() {
       return [
         {
@@ -272,22 +280,17 @@ export default {
     this.fetchUserInfo();
     this.checkScreenSize();
     window.addEventListener("resize", this.checkScreenSize);
-    // 从localStorage加载搜索历史
     this.loadSearchHistory();
-      // 从localStorage加载暗黑模式设置
-      var savedDarkMode = localStorage.getItem('darkMode');
-      this.isDarkMode = savedDarkMode === 'true';
-      if (this.isDarkMode) document.documentElement.classList.add('dark-mode');
-    // 等待featureManager初始化完成后再加载功能状态
+    var savedDarkMode = localStorage.getItem('darkMode');
+    this.isDarkMode = savedDarkMode === 'true';
+    if (this.isDarkMode) document.documentElement.classList.add('dark-mode');
     await this.loadFeatureStatus();
   },
-  //移除事件监听器
   beforeDestroy() {
     window.removeEventListener("resize", this.checkScreenSize);
   },
   methods: {
     goHome() {
-      // 跳转到首页
       this.$router.push("/home");
     },
     goUserManagement() {
@@ -318,29 +321,23 @@ export default {
       this.$router.push("/server-side-management");
     },
 
-    // 跳转到音色资源管理
     goVoiceResourceManagement() {
       this.$router.push("/voice-resource-management");
     },
-    // 添加默认角色模板管理导航方法
     goAgentTemplateManagement() {
       this.$router.push("/agent-template-management");
     },
-    // 跳转到功能管理
     goFeatureManagement() {
       this.$router.push("/feature-management");
     },
-    // 加载功能状态
     async loadFeatureStatus() {
-      // 等待featureManager初始化完成
       await featureManager.waitForInitialization();
-      
+
       const config = featureManager.getConfig();
-      
+
       this.featureStatus.voiceClone = config.voiceClone;
       this.featureStatus.knowledgeBase = config.knowledgeBase;
     },
-    // 切换暗黑模式
     toggleDarkMode(val) {
       if (val) {
         document.documentElement.classList.add('dark-mode');
@@ -349,7 +346,6 @@ export default {
       }
       localStorage.setItem('darkMode', val);
     },
-    // 获取用户信息
     fetchUserInfo() {
       userApi.getUserInfo(({ data }) => {
         this.userInfo = data.data;
@@ -361,42 +357,32 @@ export default {
     checkScreenSize() {
       this.isSmallScreen = window.innerWidth <= 1386;
     },
-    // 处理搜索
     handleSearch() {
       const searchValue = this.search.trim();
 
-      // 如果搜索内容为空，触发重置事件
       if (!searchValue) {
         this.$emit("search-reset");
         return;
       }
 
-      // 保存搜索历史
       this.saveSearchHistory(searchValue);
-
-      // 触发搜索事件，将搜索关键词传递给父组件
       this.$emit("search", searchValue);
 
-      // 搜索完成后让输入框失去焦点，从而触发blur事件隐藏搜索历史
       if (this.$refs.searchInput) {
         this.$refs.searchInput.blur();
       }
     },
 
-    // 显示搜索历史
     showSearchHistory() {
       this.showHistory = true;
     },
 
-    // 隐藏搜索历史
     hideSearchHistory() {
-      // 延迟隐藏，以便点击事件能够执行
       setTimeout(() => {
         this.showHistory = false;
       }, 200);
     },
 
-    // 加载搜索历史
     loadSearchHistory() {
       try {
         const history = localStorage.getItem(this.SEARCH_HISTORY_KEY);
@@ -409,21 +395,17 @@ export default {
       }
     },
 
-    // 保存搜索历史
     saveSearchHistory(keyword) {
       if (!keyword || this.searchHistory.includes(keyword)) {
         return;
       }
 
-      // 添加到历史记录开头
       this.searchHistory.unshift(keyword);
 
-      // 限制历史记录数量
       if (this.searchHistory.length > this.MAX_HISTORY_COUNT) {
         this.searchHistory = this.searchHistory.slice(0, this.MAX_HISTORY_COUNT);
       }
 
-      // 保存到localStorage
       try {
         localStorage.setItem(this.SEARCH_HISTORY_KEY, JSON.stringify(this.searchHistory));
       } catch (error) {
@@ -431,13 +413,11 @@ export default {
       }
     },
 
-    // 选择搜索历史项
     selectSearchHistory(keyword) {
       this.search = keyword;
       this.handleSearch();
     },
 
-    // 移除单个搜索历史项
     removeSearchHistory(index) {
       this.searchHistory.splice(index, 1);
       try {
@@ -447,7 +427,6 @@ export default {
       }
     },
 
-    // 清空所有搜索历史
     clearSearchHistory() {
       this.searchHistory = [];
       try {
@@ -456,16 +435,12 @@ export default {
         console.error("清空搜索历史失败:", error);
       }
     },
-    // 显示修改密码弹窗
     showChangePasswordDialog() {
       this.isChangePasswordDialogVisible = true;
-      // 添加：显示修改密码弹窗后重置用户菜单可见状态
       this.userMenuVisible = false;
     },
-    // 退出登录
     async handleLogout() {
       try {
-        // 调用 Vuex 的 logout action
         await this.logout();
         this.$message.success({
           message: this.$t("message.success"),
@@ -479,17 +454,13 @@ export default {
         });
       }
     },
-    // 监听参数字典下拉菜单的可见状态变化
     handleParamDropdownVisibleChange(visible) {
       this.paramDropdownVisible = visible;
     },
 
-    // 监听音色克隆下拉菜单的可见状态变化
     handleVoiceCloneDropdownVisibleChange(visible) {
       this.voiceCloneDropdownVisible = visible;
     },
-    // 在data中添加一个key用于强制重新渲染组件
-    // 处理 Cascader 选择变化
     handleCascaderChange(value) {
       if (!value || value.length === 0) {
         return;
@@ -497,7 +468,6 @@ export default {
 
       const action = value[value.length - 1];
 
-      // 处理操作
       switch (action) {
         case "changePassword":
           this.showChangePasswordDialog();
@@ -507,23 +477,18 @@ export default {
           break;
       }
 
-      // 操作完成后立即清空选择
       setTimeout(() => {
         this.completeResetCascader();
       }, 300);
     },
 
-    // 完全重置级联选择器
     completeResetCascader() {
       if (this.$refs.userCascader) {
         try {
-          // 尝试所有可能的方法来清空选择
-          // 1. 尝试使用组件提供的clearValue方法
           if (this.$refs.userCascader.clearValue) {
             this.$refs.userCascader.clearValue();
           }
 
-          // 2. 直接清空内部属性
           if (this.$refs.userCascader.$data) {
             this.$refs.userCascader.$data.selectedPaths = [];
             this.$refs.userCascader.$data.displayLabels = [];
@@ -532,7 +497,6 @@ export default {
             this.$refs.userCascader.$data.showAllLevels = false;
           }
 
-          // 3. 操作DOM清除选中状态
           const menuElement = this.$refs.userCascader.$refs.menu;
           if (menuElement && menuElement.$el) {
             const activeItems = menuElement.$el.querySelectorAll(
@@ -553,23 +517,17 @@ export default {
       }
     },
 
-    // 点击头像触发cascader下拉菜单
     handleAvatarClick() {
       if (this.$refs.userCascader) {
-        // 切换菜单可见状态
         this.userMenuVisible = !this.userMenuVisible;
 
-        // 菜单收起时清空选择值
         if (!this.userMenuVisible) {
           this.completeResetCascader();
         }
 
-        // 直接设置菜单的显隐状态
         try {
-          // 尝试使用toggleDropDownVisible方法
           this.$refs.userCascader.toggleDropDownVisible(this.userMenuVisible);
         } catch (error) {
-          // 如果toggle方法失败，尝试直接设置属性
           if (this.$refs.userCascader.$refs.menu) {
             this.$refs.userCascader.$refs.menu.showMenu(this.userMenuVisible);
           } else {
@@ -579,7 +537,6 @@ export default {
       }
     },
 
-    // 处理用户菜单可见性变化
     handleUserMenuVisibleChange(visible) {
       if (this.menuVisibleTimer) return;
       this.menuVisibleTimer = setTimeout(() => {
@@ -588,13 +545,11 @@ export default {
         this.menuVisibleTimer = null;
       }, 100);
 
-      // 如果菜单关闭了，也要清空选择值
       if (!visible) {
         this.completeResetCascader();
       }
     },
 
-    // 使用 mapActions 引入 Vuex 的 logout action
     ...mapActions(["logout"]),
   },
 };
@@ -602,91 +557,148 @@ export default {
 
 <style lang="scss" scoped>
 .header {
-  background: #f6fcfe66;
-  border: 1px solid #fff;
-  height: 63px !important;
-  min-width: 900px;
-  /* 设置最小宽度防止过度压缩 */
-  overflow: visible;
+  height: auto !important;
+  min-width: 0;
+  padding: 18px 24px 0;
+  background: transparent;
+  border: none;
 }
 
 .header-container {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(220px, auto) minmax(0, 1fr) auto;
   align-items: center;
-  height: 100%;
-  padding: 0 10px;
+  gap: 18px;
+  padding: 16px 18px;
+  border-radius: 28px;
+  background: var(--deskbot-surface);
+  border: 1px solid var(--deskbot-border);
+  box-shadow: var(--deskbot-shadow-md);
+  backdrop-filter: blur(18px);
 }
 
 .header-left {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-width: 120px;
+  gap: 14px;
   cursor: pointer;
+  min-width: 0;
 }
 
 .logo-img {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
 }
 
-.brand-img {
-  height: 20px;
+.brand-copy {
+  min-width: 0;
+}
+
+.brand-copy__eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--deskbot-text-muted);
+}
+
+.brand-copy__title {
+  margin-top: 5px;
+  color: var(--deskbot-text-strong);
+  font-family: var(--deskbot-font-display);
+  font-size: 20px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .header-center {
   display: flex;
   align-items: center;
-  gap: 25px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  gap: 10px;
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.header-center::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-pill,
+.nav-pill__content {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-pill {
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 18px;
+  background: var(--deskbot-surface-muted);
+  color: var(--deskbot-text);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+}
+
+.nav-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.nav-pill.active-tab {
+  background: linear-gradient(135deg, var(--deskbot-accent) 0%, #2a88f1 100%);
+  color: #ffffff;
+}
+
+.nav-pill__icon {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.nav-pill__icon img {
+  width: 15px;
+  height: 15px;
+}
+
+.nav-pill.active-tab .nav-pill__icon {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.nav-pill.active-tab .nav-pill__icon img {
+  filter: brightness(0) invert(1);
+}
+
+.nav-pill__arrow {
+  font-size: 13px;
+}
+
+.nav-text {
+  max-width: 104px;
+  text-align: center;
+  line-height: 1.22;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: normal;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 7px;
-  min-width: 300px;
-  justify-content: flex-end;
-}
-
-.equipment-management {
-  height: 30px;
-  border-radius: 15px;
-  background: #deeafe;
-  display: flex;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 500;
-  gap: 7px;
-  color: #3d4566;
-  margin-left: 1px;
-  align-items: center;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  flex-shrink: 0;
-  /* 防止导航按钮被压缩 */
-  padding: 0 15px;
-  position: relative;
-}
-
-.equipment-management.active-tab {
-  background: #5778ff !important;
-  color: #fff !important;
-}
-
-.equipment-management img {
-  width: 15px;
-  height: 13px;
+  gap: 14px;
+  min-width: 0;
 }
 
 .search-container {
-  margin-right: 5px;
-  flex: 0.9;
-  min-width: 60px;
-  max-width: none;
+  flex: 1;
+  min-width: 230px;
 }
 
 .search-wrapper {
@@ -695,156 +707,171 @@ export default {
 
 .search-history-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 8px);
   left: 0;
   right: 0;
-  background: white;
-  border: 1px solid #e4e6ef;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  background: var(--deskbot-surface-strong);
+  border: 1px solid var(--deskbot-border);
+  border-radius: 18px;
+  box-shadow: var(--deskbot-shadow-lg);
   z-index: 1000;
-  margin-top: 2px;
+  overflow: hidden;
 }
 
 .search-history-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
   font-size: 12px;
-  color: #909399;
+  color: var(--deskbot-text-muted);
 }
 
 .clear-history-btn {
-  color: #909399;
-  font-size: 11px;
   padding: 0;
   height: auto;
-}
-
-.clear-history-btn:hover {
-  color: #606266;
+  font-size: 12px;
 }
 
 .search-history-list {
-  max-height: 200px;
+  max-height: 220px;
   overflow-y: auto;
 }
 
 .search-history-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
   cursor: pointer;
-  font-size: 12px;
-  color: #606266;
+  font-size: 13px;
+  color: var(--deskbot-text);
+  transition: background-color 0.18s ease;
 }
 
 .search-history-item:hover {
-  background-color: #f5f7fa;
+  background: var(--deskbot-surface-muted);
+}
+
+.history-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .clear-item-icon {
-  font-size: 10px;
-  color: #909399;
+  font-size: 11px;
+  color: var(--deskbot-text-muted);
   visibility: hidden;
-}
-.more-dropdown {
-  padding: 0;
-}
-.more-dropdown .el-dropdown-link {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  height: 100%;
-  padding: 0 15px;
 }
 
 .search-history-item:hover .clear-item-icon {
   visibility: visible;
 }
 
-.clear-item-icon:hover {
-  color: #ff4949;
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.custom-search-input>>>.el-input__inner {
-  height: 18px;
-  border-radius: 9px;
-  background-color: #fff;
-  border: 1px solid #e4e6ef;
-  padding-left: 8px;
-  font-size: 9px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  width: 100%;
+.context-chip,
+.dark-mode-toggle,
+.profile-trigger {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 18px;
+  min-height: 46px;
+}
+
+.context-chip {
+  padding: 0 14px;
+  background: var(--deskbot-surface-muted);
+  color: var(--deskbot-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dark-mode-toggle {
+  gap: 8px;
+  padding: 0 12px;
+  background: var(--deskbot-surface-muted);
+}
+
+.dark-mode-label {
+  color: var(--deskbot-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profile-trigger {
+  gap: 12px;
+  padding: 0 14px 0 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(238, 243, 251, 0.88) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  cursor: pointer;
+  min-width: 0;
+}
+
+.avatar-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.profile-trigger__copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.profile-trigger__name {
+  color: var(--deskbot-text-strong);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.profile-trigger__role {
+  color: var(--deskbot-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.profile-trigger__arrow {
+  color: var(--deskbot-text-muted);
+  font-size: 13px;
+}
+
+::v-deep .custom-search-input .el-input__inner {
+  height: 46px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  padding-left: 14px;
+  padding-right: 38px;
+  color: var(--deskbot-text-strong);
+  font-size: 13px;
 }
 
 .search-icon {
   cursor: pointer;
-  color: #909399;
-  margin-right: 3px;
-  font-size: 9px;
-  line-height: 18px;
+  color: var(--deskbot-text-muted);
+  font-size: 14px;
+  line-height: 46px;
+  margin-right: 12px;
 }
 
-.custom-search-input::v-deep .el-input__suffix-inner {
+::v-deep .custom-search-input .el-input__suffix-inner {
   display: flex;
   align-items: center;
   height: 100%;
 }
 
-.avatar-img {
-  width: 21px;
-  height: 21px;
-  flex-shrink: 0;
-  cursor: pointer;
-}
-.el-user-dropdown {
-  cursor: pointer;
-}
-
-/* 导航文本样式 - 支持中英文换行 */
-.nav-text {
-  white-space: normal;
-  text-align: center;
-  max-width: 80px;
-  line-height: 1.2;
-}
-
-/* 响应式调整 */
-@media (max-width: 1200px) {
-  .header-center {
-    gap: 14px;
-  }
-
-  .equipment-management {
-    width: 79px;
-    font-size: 9px;
-  }
-}
-
-.equipment-management.more-dropdown {
-  position: relative;
-}
-
-.equipment-management.more-dropdown .el-dropdown-menu {
-  position: absolute;
-  right: 0;
-  min-width: 120px;
-  margin-top: 5px;
-}
-
-.el-dropdown-menu__item {
-  min-width: 60px;
-  padding: 8px 20px;
-  font-size: 14px;
-  color: #606266;
-  white-space: nowrap;
-}
-
-/* 添加倒三角旋转样式 */
 .rotate-down {
   transform: rotate(180deg);
   transition: transform 0.3s ease;
@@ -854,16 +881,83 @@ export default {
   transition: transform 0.3s ease;
 }
 
-.dark-mode-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-right: 8px;
+html.dark-mode .header-container {
+  background: var(--deskbot-surface);
+  border-color: rgba(130, 152, 187, 0.16);
 }
 
-.dark-mode-label {
-  font-size: 14px;
-  color: #3d4566;
-  white-space: nowrap;
+html.dark-mode .nav-pill,
+html.dark-mode .context-chip,
+html.dark-mode .dark-mode-toggle {
+  background: rgba(19, 35, 61, 0.76);
+}
+
+html.dark-mode ::v-deep .custom-search-input .el-input__inner {
+  background: rgba(19, 35, 61, 0.76);
+}
+
+html.dark-mode .profile-trigger {
+  background: linear-gradient(180deg, rgba(15, 27, 49, 0.94) 0%, rgba(19, 35, 61, 0.9) 100%);
+  border-color: rgba(130, 152, 187, 0.16);
+}
+
+html.dark-mode .nav-pill.active-tab {
+  background: linear-gradient(135deg, var(--deskbot-accent) 0%, #2a88f1 100%);
+}
+
+html.dark-mode .nav-pill__icon,
+html.dark-mode .search-history-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 1420px) {
+  .header-container {
+    grid-template-columns: minmax(220px, auto) minmax(0, 1fr);
+  }
+
+  .header-right {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 920px) {
+  .header {
+    padding: 14px 18px 0;
+  }
+
+  .header-container {
+    padding: 14px;
+  }
+
+  .header-right {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-container {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .header-meta {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 620px) {
+  .brand-copy__title {
+    white-space: normal;
+    font-size: 18px;
+  }
+
+  .context-chip {
+    display: none;
+  }
+
+  .profile-trigger {
+    width: 100%;
+  }
 }
 </style>
